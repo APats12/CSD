@@ -76,10 +76,4 @@ Multi-threadedHTTPServer/
 - **Mutex usage:** The shared queue and any shared state are protected so that enqueue/dequeue and request handling are thread-safe.
 - **Shutdown:** On receiving a shutdown signal, the server stops accepting new connections, drains the queue, joins worker threads, and closes sockets cleanly.
 
-## License
-
-This project is part of coursework/repository under the CSD organization. Use and attribution as required by your course or license.
-
----
-
 **Repo:** [CSD / Multi-threadedHTTPServer](https://github.com/APats12/CSD/tree/main/Multi-threadedHTTPServer)
