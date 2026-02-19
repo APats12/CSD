@@ -1,43 +1,85 @@
-# Multi-threaded HTTP Server
+# Multi-Threaded HTTP Server
 
-This is a simple HTTP server program that handles client connections and serves GET and PUT requests. It supports multiple concurrent connections using a thread pool.
+A concurrent HTTP server written in C++ that handles GET and PUT requests using POSIX threads (pthreads) and dynamic queues for efficient connection handling.
 
-## Usage
-Run the compiled executable with the following command:
+## Overview
 
-./httpserver [-t threads] <port>
+This project implements a multi-threaded HTTP server with thread-safe request handling, proper request/response parsing, and graceful shutdown via signal handling. It was built as a systems programming exercise focusing on concurrency, socket programming, and synchronization.
 
-The -t option allows you to specify the number of threads to use (default is 4).
-<port> specifies the port number on which the server will listen for connections.
+## Features
 
-## Implementation Details
+- **Concurrent request handling** — Worker threads process incoming connections using a dynamic task queue
+- **HTTP methods** — Supports GET and PUT with full request parsing and response generation
+- **Thread safety** — Mutex locks protect shared data structures and ensure correct concurrent access
+- **Graceful shutdown** — Signal handling (e.g., SIGINT) allows clean teardown of threads and resources
+- **Logging** — Request and error logging for debugging and monitoring
+- **Error handling** — Robust handling of malformed requests and I/O errors
 
-### Main Function
+## Tech Stack
 
-The main function initializes the server, processes command-line arguments, and sets up the server's listener socket. It also initializes the mutex lock, queue, and threads for handling incoming connections. The number of threads can be specified using the -t option. The main function enters a loop to accept new connections and pushes them into the shared queue for processing by the worker threads.
+- **Language:** C++
+- **Concurrency:** pthreads
+- **Concepts:** Socket programming, dynamic queues, mutexes, signal handling, HTTP parsing
 
-### Connection Handling Functions
+## Building & Running
 
-The program provides several functions to handle different types of connections:
+### Prerequisites
 
-#### handle_connection: 
-Handles a client connection by parsing the request and sending the appropriate response. If the request is a GET or PUT request, it calls the corresponding handler function. If the request is unsupported, it calls the handle_unsupported function.
+- A C++ compiler with C++11 or later (e.g., `g++`, `clang++`)
+- POSIX environment (Linux, macOS, or WSL)
 
-#### handle_get: 
-Handles a GET request by opening the requested file, checking for errors, and sending the file contents as a response. It also logs the GET request details to stderr.
+### Build
 
-#### handle_put: 
-Handles a PUT request by creating or opening the requested file, checking for errors, and receiving the file contents from the client. It sends the appropriate response and logs the PUT request details to stderr.
+```bash
+# From the Multi-threadedHTTPServer directory
+make
+# or
+g++ -std=c++11 -pthread -o server *.cpp
+```
 
-#### handle_unsupported: 
-Handles an unsupported request by sending a "501 Not Implemented" response and logging the details to stderr.
+### Run
 
-### Helper Functions
+```bash
+./server [port]
+```
 
-The program provides additional helper functions:
+Example (default port 8080 or specify e.g. 4000):
 
-#### handle_get_log: 
-Logs the details of a GET request.
+```bash
+./server 4000
+```
 
-#### process_connection: 
-Thread function responsible for handling incoming client connections. It retrieves a connection from the shared queue, processes it, and closes the connection.
+Then send requests, e.g.:
+
+```bash
+curl -X GET http://localhost:4000/path
+curl -X PUT -d "body" http://localhost:4000/path
+```
+
+## Project Structure
+
+```
+Multi-threadedHTTPServer/
+├── README.md
+├── Makefile
+├── server.cpp          # Main entry, server loop, thread pool
+├── request.cpp / .h    # HTTP request parsing
+├── response.cpp / .h   # HTTP response generation
+└── ...                 # Other source files as in your repo
+```
+
+*(Adjust the structure above to match your actual files after you open the repo.)*
+
+## Design Highlights
+
+- **Dynamic queue:** Incoming connections are enqueued; worker threads dequeue and handle them, allowing a fixed number of threads to serve many connections.
+- **Mutex usage:** The shared queue and any shared state are protected so that enqueue/dequeue and request handling are thread-safe.
+- **Shutdown:** On receiving a shutdown signal, the server stops accepting new connections, drains the queue, joins worker threads, and closes sockets cleanly.
+
+## License
+
+This project is part of coursework/repository under the CSD organization. Use and attribution as required by your course or license.
+
+---
+
+**Repo:** [CSD / Multi-threadedHTTPServer](https://github.com/APats12/CSD/tree/main/Multi-threadedHTTPServer)
